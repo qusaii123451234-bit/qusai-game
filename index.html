@@ -3,38 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق تحديات قصي</title>
+    <title>تطبيق تحديات قصي الأسطوري</title>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1e1e2f, #282a36);
+            --card-bg: #383a59;
+            --text-color: white;
+            --btn-bg: #50fa7b;
+            --btn-color: #282a36;
+        }
+
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #f0f2f5, #d9dedf);
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --btn-bg: #4f46e5;
+            --btn-color: white;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1e1e2f, #282a36);
-            color: white;
+            background: var(--bg-gradient);
+            color: var(--text-color);
             text-align: center;
-            padding-top: 50px;
+            padding-top: 30px;
+            transition: 0.3s;
         }
         .card {
-            background-color: #383a59;
-            max-width: 450px;
+            background-color: var(--card-bg);
+            max-width: 480px;
             margin: auto;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: 0.3s;
         }
         .hidden {
             display: none;
         }
-        input {
-            padding: 10px;
+        input, textarea {
+            padding: 12px;
             font-size: 16px;
-            width: 60%;
+            width: 75%;
             border-radius: 5px;
-            border: none;
+            border: 1px solid #ccc;
             margin-bottom: 15px;
-            text-align: center;
+            text-align: right;
+            font-family: Arial, sans-serif;
         }
         button {
-            background-color: #50fa7b;
-            color: #282a36;
+            background-color: var(--btn-bg);
+            color: var(--btn-color);
             border: none;
             padding: 12px 25px;
             font-size: 16px;
@@ -42,174 +61,588 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+            transition: 0.2s;
         }
         button:hover {
-            background-color: #37db63;
+            opacity: 0.85;
         }
         .counter-btn {
             background-color: #ffb86c;
+            color: #282a36;
             font-size: 20px;
             padding: 15px 30px;
         }
-        #result {
-            margin-top: 15px;
+        .rps-btn {
+            background-color: #8be9fd;
+            color: #282a36;
             font-size: 18px;
+            margin: 5px;
+            padding: 10px 20px;
+        }
+        #result, #rpsResult, #authError {
+            margin-top: 10px;
+            font-size: 16px;
             font-weight: bold;
         }
         a {
-            color: #50fa7b;
+            color: var(--btn-bg);
             font-size: 18px;
             font-weight: bold;
             text-decoration: underline;
+        }
+        .score-box {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffb86c;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        .list-container {
+            text-align: right;
+            background: rgba(0,0,0,0.15);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 15px;
+        }
+        .msg-box {
+            background: rgba(0,0,0,0.25);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: right;
+            font-size: 14px;
+            border-right: 4px solid #50fa7b;
+        }
+        .reply-box {
+            background: rgba(80, 250, 123, 0.1);
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #50fa7b;
+            border-right: 3px solid #50fa7b;
         }
     </style>
 </head>
 <body>
 
-    <!-- المرحلة 0: شاشة الترحيب -->
-    <div id="welcomeScreen" class="card">
-        <h1>🚀 أهلاً بك يا قصي</h1>
-        <p>جاهز لتخوض تحدي الأقوى؟</p>
-        <button onclick="goToGame()">اذهب إلى التحدي</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 تغيير النمط</button>
+
+    <!-- شاشة تسجيل الدخول وإنشاء الحساب -->
+    <div id="loginScreen" class="card">
+        <h1>🔐 بوابة الدخول</h1>
+        <p>اختر تسجيل الدخول أو إنشاء حساب جديد:</p>
+        <input type="text" id="usernameInput" placeholder="اسم المستخدم الفريد">
+        <br>
+        <input type="password" id="passwordInput" placeholder="كلمة السر">
+        <br>
+        <button onclick="loginUser()" style="background-color: #50fa7b; width: 45%;">تسجيل دخول</button>
+        <button onclick="registerUser()" style="background-color: #8be9fd; width: 45%;">حساب جديد</button>
+        <div id="authError" style="color: #ff5555;"></div>
     </div>
 
-    <!-- المرحلة 1: لعبة تخمين الأرقام -->
+    <!-- الشاشة الرئيسية -->
+    <div id="welcomeScreen" class="card hidden">
+        <h1>👋 أهلاً بك يا أسطورة، <span id="displayName" style="color: #50fa7b;"></span></h1>
+        <p id="roleBadge" style="color: #ffb86c; font-weight: bold;"></p>
+        <button onclick="goToGame()" style="width: 80%; font-size: 18px;">🎮 ابدأ التحديات</button>
+        <br>
+        <button onclick="showLeaderboard()" style="width: 80%; font-size: 18px; background-color: #ffb86c; color: #282a36;">🏆 قائمة الصدارة</button>
+        <br>
+        <button onclick="showContactScreen()" style="width: 80%; font-size: 18px; background-color: #8be9fd; color: #282a36;">📬 الرسائل والردود</button>
+        <br>
+        <button id="adminPanelBtn" class="hidden" onclick="showAdminPanel()" style="width: 80%; font-size: 18px; background-color: #ff5555; color: white;">⚙️ لوحة تحكم المشرف</button>
+        <br><br>
+        <button onclick="logout()" style="background-color: #444; color: white; font-size: 14px; padding: 8px 15px;">تسجيل خروج</button>
+    </div>
+
+    <!-- شاشة التواصل والردود للمستخدم -->
+    <div id="contactScreen" class="card hidden">
+        <h1>📬 صندوق الرسائل والردود</h1>
+        <p>أرسل رسالة للمشرف أو تابع ردوده عليك:</p>
+        <textarea id="userMessageText" rows="3" placeholder="اكتب رسالتك هنا..."></textarea>
+        <br>
+        <button onclick="sendUserMessage()" style="background-color: #50fa7b; width: 80%;">إرسال الرسالة</button>
+        <div id="msgStatus" style="font-size: 14px; margin-top: 6px;"></div>
+
+        <h3 style="color: #8be9fd; margin-top: 15px; font-size: 16px;">رسائلك وردود قصي عليها:</h3>
+        <div class="list-container" id="userMyMessagesContainer" style="max-height: 150px;"></div>
+
+        <br>
+        <button onclick="backToWelcome()">🏠 عودة للقائمة</button>
+    </div>
+
+    <!-- لوحة تحكم المشرف -->
+    <div id="adminScreen" class="card hidden">
+        <h1>⚙️ لوحة تحكم المشرف</h1>
+        <p>الرد على رسائل الزوار وإدارة المستخدمين:</p>
+        
+        <h3 style="color: #8be9fd; margin-top: 15px;">💬 رسائل الزوار للرد عليها:</h3>
+        <div class="list-container" id="adminMessagesContainer" style="max-height: 180px;"></div>
+
+        <h3 style="color: #ffb86c; margin-top: 15px;">👥 إدارة الحسابات:</h3>
+        <div class="list-container" id="adminUsersContainer" style="max-height: 140px;"></div>
+        
+        <br>
+        <button onclick="backToWelcome()">🏠 عودة للقائمة</button>
+    </div>
+
+    <!-- قائمة الصدارة -->
+    <div id="leaderboardScreen" class="card hidden">
+        <h1>🏆 لوحة الشرف والصدارة</h1>
+        <div class="list-container" id="leaderboardContainer"></div>
+        <br>
+        <button onclick="backToWelcome()">🏠 عودة للقائمة</button>
+    </div>
+
+    <!-- المرحلة 1: لعبة التخمين -->
     <div id="gameScreen" class="card hidden">
-        <h1>🎮 المرحلة الأولى: التخمين</h1>
-        <p>خمن رقماً سرياً بين <strong>1 و 10</strong> (لديك 3 محاولات):</p>
-        <input type="number" id="userGuess" min="1" max="10" placeholder="أدخل رقمك هنا">
+        <div class="score-box">⭐ نقاطك الحالية: <span id="score">0</span></div>
+        <h1>🎮 المرحلة 1: التخمين</h1>
+        <p>خمن رقماً سرياً بين <strong>1 و 10</strong> (+10 نقاط):</p>
+        <input type="number" id="userGuess" min="1" max="10" placeholder="أدخل رقمك">
         <br>
         <button onclick="checkGuess()">تحقق من التخمين</button>
         <div id="result"></div>
         <br>
-        <button id="nextToIstighfar" class="hidden" onclick="goToIstighfarScreen()">انتقل إلى التحدي الثاني</button>
+        <button id="nextToRps" class="hidden" onclick="goToRpsScreen()">التحدي التالي</button>
     </div>
 
-    <!-- المرحلة 2: تحدي الاستغفار (10 مرات) -->
+    <!-- المرحلة 2: حجرة ورقة مقص -->
+    <div id="rpsScreen" class="card hidden">
+        <div class="score-box">⭐ نقاطك الحالية: <span id="scoreRps">0</span></div>
+        <h1>✂️ المرحلة 2: الذكاء</h1>
+        <p>اختر حركتك ضد الكمبيوتر (+10 نقاط للفوز):</p>
+        <button class="rps-btn" onclick="playRps('حجرة')">🪨 حجرة</button>
+        <button class="rps-btn" onclick="playRps('ورقة')">📄 ورقة</button>
+        <button class="rps-btn" onclick="playRps('مقص')">✂️ مقص</button>
+        <div id="rpsResult"></div>
+        <br>
+        <button id="nextToIstighfar" class="hidden" onclick="goToIstighfarScreen()">التحدي التالي</button>
+    </div>
+
+    <!-- المرحلة 3: الاستغفار -->
     <div id="istighfarScreen" class="card hidden">
+        <div class="score-box">⭐ نقاطك الحالية: <span id="scoreIstighfar">0</span></div>
         <h1> استغفر الله</h1>
-        <p>اضغط على الزر أدناه واستغفر الله 10 مرات:</p>
-        <button class="counter-btn" onclick="countIstighfar()">أستغفر الله (<span id="istighfarCount">0</span>/10)</button>
+        <p>استغفر الله 5 مرات (+2 نقطة لكل ضغطة):</p>
+        <button class="counter-btn" onclick="countIstighfar()">أستغفر الله (<span id="istighfarCount">0</span>/5)</button>
         <br>
-        <button id="nextToSalat" class="hidden" onclick="goToSalatScreen()">انتقل إلى التحدي التالي</button>
+        <button id="nextToSalat" class="hidden" onclick="goToSalatScreen()">التحدي التالي</button>
     </div>
 
-    <!-- المرحلة 3: تحدي الصلاة على النبي (10 مرات) -->
+    <!-- المرحلة 4: الصلاة على النبي -->
     <div id="salatScreen" class="card hidden">
+        <div class="score-box">⭐ نقاطك الحالية: <span id="scoreSalat">0</span></div>
         <h1> صلِ على النبي</h1>
-        <p>اضغط على الزر أدناه وصلِ على النبي محمد صلى الله عليه وسلم 10 مرات:</p>
-        <button class="counter-btn" onclick="countSalat()">اللهم صلِ على محمد (<span id="salatCount">0</span>/10)</button>
+        <p>صلِ على النبي 5 مرات (+2 نقطة لكل ضغطة):</p>
+        <button class="counter-btn" onclick="countSalat()">اللهم صلِ على محمد (<span id="salatCount">0</span>/5)</button>
         <br>
-        <button id="nextToYouTube" class="hidden" onclick="goToYouTubeScreen()">انتقل إلى التحدي القادم</button>
+        <button id="nextToYouTube" class="hidden" onclick="goToYouTubeScreen()">التحدي الأخير</button>
     </div>
 
-    <!-- المرحلة 4: تحدي اليوتيوب -->
+    <!-- المرحلة 5: اليوتيوب -->
     <div id="youtubeScreen" class="card hidden">
+        <div class="score-box">⭐ نقاطك الحالية: <span id="scoreYoutube">0</span></div>
         <h1> قناة اليوتيوب</h1>
-        <p>يجب أن تشترك بالقناة أولاً ليظهر لك زر النهاية:</p>
-        <p><a href="https://youtube.com/@subway_qusai?si=MeZmSIaGfrsIiXUR" target="_blank" onclick="unlockSub()">اضغط هنا للاشتراك في قناة قصي سبواي</a></p>
+        <p>اشترك بقناة قصي سبواي (+15 نقطة):</p>
+        <p><a href="https://youtube.com/@subway_qusai?si=MeZmSIaGfrsIiXUR" target="_blank" onclick="unlockSub()">اضغط هنا للاشتراك</a></p>
         <br>
-        <button id="finalFinishBtn" class="hidden" onclick="goToFinishScreen()">انتقل إلى النهاية</button>
+        <button id="finalFinishBtn" class="hidden" onclick="goToFinishScreen()">إنهاء وحفظ النقاط</button>
     </div>
 
-    <!-- المرحلة 5: شاشة النهاية والفوز -->
+    <!-- شاشة الفوز النهائية -->
     <div id="finishScreen" class="card hidden">
-        <h1>🎉 مبارك لك يا بطل!</h1>
-        <p style="font-size: 20px; line-height: 1.6;">مبروك لعبت لعبة التخمين، واستغفرت الله 10 مرات، وصليت على النبي، وأتممت جميع التحديات بنجاح مبارك !</p>
+        <h1>🏆 كفو يا أسطورة!</h1>
+        <p style="font-size: 20px;">أنهيت جميع التحديات بنجاح تام!</p>
+        <p style="font-size: 22px; color: #50fa7b; font-weight: bold;">مجموع نقاطك المسجلة: <span id="finalScore">0</span> نقطة 🔥</p>
+        <br>
+        <button onclick="backToWelcome()" style="background-color: #50fa7b; color: #282a36;">العودة للقائمة الرئيسية</button>
     </div>
 
     <script>
-        // تنقل بين الشاشات
+        let currentUser = "";
+        let currentScore = 0;
+        let isAdmin = false;
+
+        function forceSetupAdmin() {
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+            users["قصي ابو صبحة"] = { password: "1234", score: users["قصي ابو صبحة"] ? users["قصي ابو صبحة"].score : 100, role: "admin" };
+            localStorage.setItem('qusaiUsers', JSON.stringify(users));
+        }
+        forceSetupAdmin();
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        function registerUser() {
+            const name = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            const errorDiv = document.getElementById('authError');
+
+            if (!name || !pass) {
+                errorDiv.innerText = "الرجاء إدخال الاسم وكلمة السر!";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+
+            if (users[name]) {
+                errorDiv.innerText = "هذا الاسم مستخدم مسبقاً، اختر اسماً آخر!";
+                return;
+            }
+
+            users[name] = { password: pass, score: 0, role: "user" };
+            localStorage.setItem('qusaiUsers', JSON.stringify(users));
+            
+            errorDiv.style.color = "#50fa7b";
+            errorDiv.innerText = "تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.";
+        }
+
+        function loginUser() {
+            const name = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            const errorDiv = document.getElementById('authError');
+
+            if (!name || !pass) {
+                errorDiv.innerText = "الرجاء إدخال اسم المستخدم وكلمة السر!";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+
+            if (!users[name]) {
+                errorDiv.innerText = "الحساب غير موجود، اضغط على حساب جديد أولاً!";
+                return;
+            }
+
+            if (users[name].password !== pass) {
+                errorDiv.innerText = "كلمة السر خاطئة!";
+                return;
+            }
+
+            currentUser = name;
+            currentScore = users[name].score;
+            isAdmin = (users[name].role === "admin" || name === "قصي ابو صبحة");
+
+            document.getElementById('displayName').innerText = currentUser;
+            document.getElementById('roleBadge').innerText = isAdmin ? "👑 رتبة: مشرف عام (Admin)" : "⭐ رتبة: لاعب أسطوري";
+            
+            if (isAdmin) {
+                document.getElementById('adminPanelBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('adminPanelBtn').classList.add('hidden');
+            }
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            errorDiv.innerText = "";
+            document.getElementById('passwordInput').value = "";
+            updateScores();
+        }
+
+        function logout() {
+            currentUser = "";
+            currentScore = 0;
+            isAdmin = false;
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('usernameInput').value = "";
+            document.getElementById('authError').innerText = "";
+        }
+
+        function backToWelcome() {
+            saveUserData();
+            document.getElementById('leaderboardScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
+            document.getElementById('contactScreen').classList.add('hidden');
+            document.getElementById('finishScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
         function goToGame() {
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
         }
 
-        // منطق لعبة التخمين
+        function updateScores() {
+            document.getElementById('score').innerText = currentScore;
+            document.getElementById('scoreRps').innerText = currentScore;
+            document.getElementById('scoreIstighfar').innerText = currentScore;
+            document.getElementById('scoreSalat').innerText = currentScore;
+            document.getElementById('scoreYoutube').innerText = currentScore;
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+            if (users[currentUser]) {
+                if (currentScore > users[currentUser].score) {
+                    users[currentUser].score = currentScore;
+                }
+            }
+            localStorage.setItem('qusaiUsers', JSON.stringify(users));
+        }
+
+        // إرسال رسالة من المستخدم
+        function sendUserMessage() {
+            const text = document.getElementById('userMessageText').value.trim();
+            const statusDiv = document.getElementById('msgStatus');
+
+            if (!text) {
+                statusDiv.style.color = '#ff5555';
+                statusDiv.innerText = "الرجاء كتابة محتوى الرسالة أولاً!";
+                return;
+            }
+
+            let messages = JSON.parse(localStorage.getItem('qusaiMessages')) || [];
+            messages.push({ sender: currentUser, message: text, reply: "", date: new Date().toLocaleDateString('ar-EG') });
+            localStorage.setItem('qusaiMessages', JSON.stringify(messages));
+
+            statusDiv.style.color = '#50fa7b';
+            statusDiv.innerText = "✅ تم إرسال رسالتك إلى المشرف بنجاح!";
+            document.getElementById('userMessageText').value = "";
+            loadUserMessages();
+        }
+
+        // عرض رسائل المستخدم وردود المشرف عليها
+        function showContactScreen() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('contactScreen').classList.remove('hidden');
+            document.getElementById('msgStatus').innerText = "";
+            loadUserMessages();
+        }
+
+        function loadUserMessages() {
+            const container = document.getElementById('userMyMessagesContainer');
+            container.innerHTML = "";
+            let messages = JSON.parse(localStorage.getItem('qusaiMessages')) || [];
+            let myMsgs = messages.filter(m => m.sender === currentUser);
+
+            if (myMsgs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #aaa; font-size: 13px;">لم ترسل أي رسائل بعد.</p>';
+                return;
+            }
+
+            myMsgs.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'msg-box';
+                div.innerHTML = `
+                    <span><strong>رسالتك:</strong> ${msg.message}</span> <span style="font-size: 11px; color: #8be9fd;">(${msg.date})</span>
+                    ${msg.reply ? `<div class="reply-box">👑 رد المشرف (قصي): ${msg.reply}</div>` : `<div style="font-size: 12px; color: #ffb86c; margin-top: 5px;">⏳ بانتظار رد المشرف...</div>`}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // لوحة تحكم المشرف (إدارة الحسابات، عرض الرسائل، والرد عليها)
+        function showAdminPanel() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.remove('hidden');
+
+            // 1. عرض الرسائل مع حقل الرد
+            const msgContainer = document.getElementById('adminMessagesContainer');
+            msgContainer.innerHTML = "";
+            let messages = JSON.parse(localStorage.getItem('qusaiMessages')) || [];
+
+            if (messages.length === 0) {
+                msgContainer.innerHTML = '<p style="text-align: center; color: #aaa; font-size: 13px;">لا توجد رسائل جديدة.</p>';
+            } else {
+                messages.forEach((msg, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'msg-box';
+                    div.innerHTML = `
+                        <strong>👤 المرسل: ${msg.sender}</strong> <span style="font-size: 11px; color: #8be9fd;">(${msg.date})</span><br>
+                        <span style="font-size: 14px;">💬 ${msg.message}</span>
+                        ${msg.reply ? `<div class="reply-box">ردك السابق: ${msg.reply}</div>` : ''}
+                        <div style="margin-top: 8px; display: flex; gap: 5px;">
+                            <input type="text" id="replyInput_${idx}" placeholder="اكتب ردك هنا..." style="margin:0; padding:6px; font-size:13px; width:70%;">
+                            <button onclick="sendReply(${idx})" style="background:#50fa7b; color:#282a36; padding:6px 12px; font-size:13px; margin:0;">إرسال الرد</button>
+                            <button onclick="deleteMessage(${idx})" style="background:#ff5555; color:white; padding:6px 10px; font-size:13px; margin:0;">حذف</button>
+                        </div>
+                    `;
+                    msgContainer.appendChild(div);
+                });
+            }
+
+            // 2. عرض المستخدمين
+            const userContainer = document.getElementById('adminUsersContainer');
+            userContainer.innerHTML = "";
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+
+            for (let name in users) {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>👤 ${name} (${users[name].score} نقطة)</span>
+                    ${name !== "قصي ابو صبحة" ? `<button onclick="deleteUser('${name}')" style="background:#ff5555; color:white; padding:4px 10px; font-size:12px; margin:0;">حذف</button>` : '<span style="color:#50fa7b; font-size:12px;">المشرف الرئيسي</span>'}
+                `;
+                userContainer.appendChild(div);
+            }
+        }
+
+        // إرسال رد من المشرف
+        function sendReply(index) {
+            const replyText = document.getElementById(`replyInput_${index}`).value.trim();
+            if (!replyText) {
+                alert("الرجاء كتابة الرد أولاً!");
+                return;
+            }
+
+            let messages = JSON.parse(localStorage.getItem('qusaiMessages')) || [];
+            messages[index].reply = replyText;
+            localStorage.setItem('qusaiMessages', JSON.stringify(messages));
+            showAdminPanel();
+        }
+
+        function deleteMessage(index) {
+            let messages = JSON.parse(localStorage.getItem('qusaiMessages')) || [];
+            messages.splice(index, 1);
+            localStorage.setItem('qusaiMessages', JSON.stringify(messages));
+            showAdminPanel();
+        }
+
+        function deleteUser(targetName) {
+            if (confirm(`هل أنت متأكد من حذف الحساب: ${targetName}؟`)) {
+                let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+                delete users[targetName];
+                localStorage.setItem('qusaiUsers', JSON.stringify(users));
+                showAdminPanel();
+            }
+        }
+
+        function showLeaderboard() {
+            saveUserData();
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('leaderboardScreen').classList.remove('hidden');
+            
+            const container = document.getElementById('leaderboardContainer');
+            container.innerHTML = "";
+
+            let users = JSON.parse(localStorage.getItem('qusaiUsers')) || {};
+            let userArray = [];
+
+            for (let name in users) {
+                userArray.push({ name: name, score: users[name].score });
+            }
+
+            userArray.sort((a, b) => b.score - a.score);
+
+            userArray.forEach((item, index) => {
+                let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `🔹 ${index + 1}`;
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<span>${medal} ${item.name}</span> <span><strong>${item.score}</strong> نقطة</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        // التحديات والألعاب
         const secretNumber = Math.floor(Math.random() * 10) + 1;
         let attempts = 3;
 
         function checkGuess() {
             const userGuess = Number(document.getElementById('userGuess').value);
             const resultDiv = document.getElementById('result');
-
-            if (!userGuess) {
-                resultDiv.style.color = '#ff5555';
-                resultDiv.innerHTML = 'الرجاء إدخال رقم صحيح أولاً!';
-                return;
-            }
-
+            if (!userGuess) { resultDiv.style.color = '#ff5555'; resultDiv.innerHTML = 'الرجاء إدخال رقم صحيح!'; return; }
             attempts--;
-
             if (userGuess === secretNumber) {
-                resultDiv.style.color = '#50fa7b';
-                resultDiv.innerHTML = '🎉 كفو عليك فزت!';
-                // إظهار زر الانتقال للتحدي الثاني
-                document.getElementById('nextToIstighfar').classList.remove('hidden');
+                resultDiv.style.color = '#50fa7b'; resultDiv.innerHTML = '🎉 فزت باللغز! (+10 نقاط)';
+                currentScore += 10; updateScores(); document.getElementById('nextToRps').classList.remove('hidden');
             } else if (attempts === 0) {
-                resultDiv.style.color = '#ff5555';
-                resultDiv.innerHTML = '❌ خلصت محاولاتك! خسرت اللعبة، أعد تحميل الصفحة.';
-            } else if (userGuess > secretNumber) {
-                resultDiv.style.color = '#ffb86c';
-                resultDiv.innerHTML = `📉 الرقم السري أصغر! باقي معك ${attempts} محاولات.`;
+                resultDiv.style.color = '#ff5555'; resultDiv.innerHTML = '❌ انتهت محاولاتك!'; document.getElementById('nextToRps').classList.remove('hidden');
             } else {
-                resultDiv.style.color = '#ffb86c';
-                resultDiv.innerHTML = `📈 الرقم السري أكبر! باقي معك ${attempts} محاولات.`;
+                resultDiv.style.color = '#ffb86c'; resultDiv.innerHTML = `باقي ${attempts} محاولات.`;
             }
         }
 
-        // انتقال للاستغفار
-        function goToIstighfarScreen() {
+        function goToRpsScreen() {
             document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('rpsScreen').classList.remove('hidden');
+        }
+
+        function playRps(playerChoice) {
+            const choices = ['حجرة', 'ورقة', 'مقص'];
+            const computerChoice = choices[Math.floor(Math.random() * choices.length)];
+            const rpsResult = document.getElementById('rpsResult');
+            if (playerChoice === computerChoice) {
+                rpsResult.style.color = '#ffb86c'; rpsResult.innerHTML = `🤝 تعادل! (${computerChoice})`;
+            } else if ((playerChoice === 'حجرة' && computerChoice === 'مقص') || (playerChoice === 'ورقة' && computerChoice === 'حجرة') || (playerChoice === 'مقص' && computerChoice === 'ورقة')) {
+                rpsResult.style.color = '#50fa7b'; rpsResult.innerHTML = `🎉 فزت على الكمبيوتر! (+10 نقاط)`;
+                currentScore += 10; updateScores(); document.getElementById('nextToIstighfar').classList.remove('hidden');
+            } else {
+                rpsResult.style.color = '#ff5555'; rpsResult.innerHTML = `❌ خسرنا الجولة! (${computerChoice})`;
+                document.getElementById('nextToIstighfar').classList.remove('hidden');
+            }
+        }
+
+        function goToIstighfarScreen() {
+            document.getElementById('rpsScreen').classList.add('hidden');
             document.getElementById('istighfarScreen').classList.remove('hidden');
         }
 
-        // عداد الاستغفار
         let istighfarClicks = 0;
         function countIstighfar() {
-            istighfarClicks++;
+            istighfarClicks++; currentScore += 2; updateScores();
             document.getElementById('istighfarCount').innerText = istighfarClicks;
-            if (istighfarClicks >= 10) {
-                document.getElementById('nextToSalat').classList.remove('hidden');
-            }
+            if (istighfarClicks >= 5) document.getElementById('nextToSalat').classList.remove('hidden');
         }
 
-        // انتقال للصلاة على النبي
         function goToSalatScreen() {
             document.getElementById('istighfarScreen').classList.add('hidden');
             document.getElementById('salatScreen').classList.remove('hidden');
         }
 
-        // عداد الصلاة على النبي
-        let salatClicks = 0;
+        let salatClicksCount = 0;
         function countSalat() {
-            salatClicks++;
-            document.getElementById('salatCount').innerText = salatClicks;
-            if (salatClicks >= 10) {
-                document.getElementById('nextToYouTube').classList.remove('hidden');
-            }
+            salatClicksCount++; currentScore += 2; updateScores();
+            document.getElementById('salatCount').innerText = salatClicksCount;
+            if (salatClicksCount >= 5) document.getElementById('nextToYouTube').classList.remove('hidden');
         }
 
-        // انتقال لشاشة اليوتيوب
         function goToYouTubeScreen() {
             document.getElementById('salatScreen').classList.add('hidden');
             document.getElementById('youtubeScreen').classList.remove('hidden');
         }
 
-        // فتح رابط اليوتيوب وإظهار زر النهاية
         function unlockSub() {
-            // إظهار زر النهاية بعد الضغط على الرابط
             setTimeout(function() {
+                currentScore += 15; updateScores();
                 document.getElementById('finalFinishBtn').classList.remove('hidden');
             }, 1000);
         }
 
-        // الانتقال لشاشة الفوز النهائية
         function goToFinishScreen() {
+            saveUserData();
             document.getElementById('youtubeScreen').classList.add('hidden');
             document.getElementById('finishScreen').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = currentScore;
         }
     </script>
-
 </body>
 </html>
